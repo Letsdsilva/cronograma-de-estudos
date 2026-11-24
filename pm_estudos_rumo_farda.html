@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>PM Estudos • Rumo à Farda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab-active {
+      background-color: #0f172a;
+      color: #ffffff;
+    }
+    .tab-inactive {
+      color: #475569;
+    }
+    .tab-inactive:hover {
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Cabeçalho Principal -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex flex-col gap-3">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0">
+            PM
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">Rumo à Farda</h1>
+            <div class="flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+              <span>Sigilo Tático • Salvo neste celular</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            id="btn-notif-header"
+            onclick="requestInstructorNotifications()"
+            class="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 text-xs font-extrabold transition-colors flex items-center gap-1"
+            title="Ativar Lembretes de Cobrança do Instrutor"
+          >
+            <span>🔔</span>
+            <span id="notif-btn-label" class="hidden sm:inline">Ativar Cobrança</span>
+          </button>
+          <button
+            type="button"
+            onclick="openBackupModal()"
+            class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors"
+            title="Salvar como App no celular ou exportar backup"
+          >
+            📲 App / Backup
+          </button>
+        </div>
+      </div>
+
+      <!-- Navegação por Abas -->
+      <nav class="flex bg-slate-100 p-1 rounded-xl w-full" aria-label="Navegação principal">
+        <button
+          id="tab-btn-cronograma"
+          onclick="switchTab('cronograma')"
+          class="flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all tab-active"
+        >
+          🎯 Missão & Revisão
+        </button>
+        <button
+          id="tab-btn-simulado"
+          onclick="switchTab('simulado')"
+          class="flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all tab-inactive"
+        >
+          📝 Simulado PM (IA)
+        </button>
+        <button
+          id="tab-btn-redacao"
+          onclick="switchTab('redacao')"
+          class="flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all tab-inactive"
+        >
+          📸 Redação (Foto)
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-5 space-y-5">
+
+    <!-- ==================== SEÇÃO 1: MISSÃO DO DIA & REVISÃO ==================== -->
+    <section id="section-cronograma" class="space-y-5">
+
+      <!-- Banner Severo de Cobrança por Atraso / Falta -->
+      <div id="inactivity-alert" class="hidden bg-rose-950 text-white border-2 border-rose-500 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
+        <div class="flex items-start gap-3">
+          <div class="w-11 h-11 rounded-xl bg-rose-700 flex items-center justify-center text-2xl shrink-0 animate-pulse">
+            🚨
+          </div>
+          <div class="flex-1 space-y-1.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-[11px] font-black uppercase tracking-wider text-rose-300">
+                COBRANÇA DO INSTRUTOR • DESERÇÃO DETECTADA
+              </span>
+              <span id="penalty-badge" class="text-xs font-extrabold bg-rose-800 text-rose-100 px-2.5 py-0.5 rounded-lg border border-rose-600">
+                -0 XP
+              </span>
+            </div>
+            <p id="inactivity-headline" class="text-sm sm:text-base font-black text-white leading-snug">
+              VOCÊ SUMIU!
+            </p>
+            <p id="inactivity-speech" class="text-xs sm:text-sm font-bold text-amber-300 bg-rose-900/90 p-3 rounded-xl border border-rose-700 leading-relaxed">
+              Enquanto você dorme ou inventa desculpa, tem 50 mil candidatos fazendo questão agora. Se não se esforçar, NÃO VAI PASSAR e vai assistir a formatura de fora!
+            </p>
+            <p id="inactivity-details" class="text-xs text-rose-200 leading-relaxed pt-0.5"></p>
+          </div>
+        </div>
+        <div class="flex justify-end pt-1">
+          <button
+            type="button"
+            onclick="jumpToOldestLateDay()"
+            class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-extrabold uppercase tracking-wide transition-colors shadow-xs"
+          >
+            Ir para o dia atrasado e pagar a falta →
+          </button>
+        </div>
+      </div>
+
+      <!-- Lembrete Persistente de Meta Diária Pendente (quando ainda não bateu 100% hoje) -->
+      <div id="daily-pending-reminder" class="hidden bg-amber-50 border-2 border-amber-400 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl shrink-0">⚡</span>
+          <div>
+            <p class="text-xs sm:text-sm font-extrabold text-amber-950">Missão de hoje ainda incompleta!</p>
+            <p class="text-[11px] sm:text-xs text-amber-800 font-medium">Feche todas as tarefas do dia antes da meia-noite ou levará falta (-15 XP) amanhã.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onclick="goToTodayMission()"
+          class="px-3 py-1.5 rounded-xl bg-amber-900 text-white text-xs font-extrabold shrink-0 hover:bg-amber-950 transition-colors"
+        >
+          Cumprir Agora
+        </button>
+      </div>
+
+      <!-- Painel Compacto de Status (Contagem, Patente, XP e Ofensiva) -->
+      <div class="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Prova PM • 27/02/2027</span>
+            <div class="flex items-baseline gap-2 mt-0.5">
+              <span id="countdown-days" class="text-2xl sm:text-3xl font-black text-emerald-400">--</span>
+              <span class="text-xs sm:text-sm font-medium text-slate-300">dias restantes</span>
+            </div>
+            <p id="current-phase-label" class="text-[11px] font-semibold text-amber-300 mt-0.5">Fase 1: Base Teórica</p>
+          </div>
+
+          <div class="flex items-center gap-2.5 bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5">
+            <div class="text-center pr-2.5 border-r border-slate-700">
+              <span class="block text-[10px] uppercase text-slate-400 font-bold">Patente</span>
+              <span id="rank-name" class="text-xs sm:text-sm font-black text-white">Recruta</span>
+              <span id="total-xp" class="block text-[11px] font-bold text-indigo-400">0 XP</span>
+            </div>
+            <div class="text-center pr-2.5 border-r border-slate-700">
+              <span class="block text-[10px] uppercase text-slate-400 font-bold">Ofensiva</span>
+              <span class="text-xs sm:text-sm font-black text-amber-400">🔥 <span id="streak-count">0</span>d</span>
+            </div>
+            <div class="text-center">
+              <span class="block text-[10px] uppercase text-slate-400 font-bold">Atrasos</span>
+              <span id="late-days-count" class="text-xs sm:text-sm font-black text-rose-400">0d</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra Discreta de Simulador de Data (Teste) + Mapa Confidencial -->
+        <div class="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 font-semibold">Simulador de Data (Teste):</span>
+            <input
+              type="date"
+              id="reference-date-input"
+              min="2026-11-24"
+              max="2027-02-27"
+              onchange="handleReferenceDateChange(this.value)"
+              class="bg-slate-800 border border-slate-700 text-white font-bold rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400"
+            />
+            <button
+              type="button"
+              onclick="advanceOneDay()"
+              class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-bold px-2.5 py-1 rounded-lg transition-colors"
+              title="Avançar 1 dia para testar bloqueio futuro e cobranças"
+            >
+              +1 Dia
+            </button>
+          </div>
+          <button
+            type="button"
+            onclick="openCalendarModal()"
+            class="text-slate-300 hover:text-white underline underline-offset-2 font-semibold"
+          >
+            🗺️ Mapa da Missão (96 dias)
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== CARD ÚNICO: MISSÃO DO DIA / REVISÃO DO PASSADO ==================== -->
+      <div id="focused-day-wrapper" class="space-y-2.5">
+        <!-- Controles de Navegação entre Dias (Futuro 100% Bloqueado) -->
+        <div class="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            id="btn-prev-day"
+            onclick="navigateViewedDay(-1)"
+            class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-40 text-xs font-bold text-slate-700 transition-all shadow-2xs"
+          >
+            ← Revisar Dia Anterior
+          </button>
+
+          <button
+            type="button"
+            id="btn-go-today"
+            onclick="goToTodayMission()"
+            class="hidden px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-extrabold transition-colors shadow-2xs"
+          >
+            🎯 Voltar para Hoje
+          </button>
+
+          <button
+            type="button"
+            id="btn-next-day"
+            onclick="handleNextDayClick()"
+            class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all shadow-2xs flex items-center gap-1.5"
+          >
+            <span id="btn-next-day-label">Próximo Dia →</span>
+          </button>
+        </div>
+
+        <!-- Aviso de Bloqueio Futuro (aparece ao tentar avançar além de hoje) -->
+        <div id="future-lock-banner" class="hidden p-3.5 rounded-xl bg-slate-900 border border-amber-500/60 text-amber-200 text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-sm">
+          <span class="text-lg shrink-0">🔒</span>
+          <span>Conteúdo futuro bloqueado pelo Comando. Cumpra a missão de hoje primeiro!</span>
+        </div>
+
+        <!-- Container onde apenas o dia selecionado (hoje ou passado) é renderizado -->
+        <div id="single-day-container"></div>
+      </div>
+
+      <!-- ==================== PAINEL DE LIÇÕES CONCLUÍDAS POR MATÉRIA ==================== -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">Lições Concluídas por Matéria</h2>
+            <p class="text-xs text-slate-500">Progresso acumulado nas 8 frentes do edital PM</p>
+          </div>
+          <span id="overall-lessons-badge" class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-slate-900 text-white">
+            0/0 lições
+          </span>
+        </div>
+
+        <div id="subjects-progress-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== SEÇÃO 2: SIMULADO OFICIAL PM (IA) ==================== -->
+    <section id="section-simulado" class="hidden space-y-5">
+
+      <!-- Tela Inicial / Gerador de Simulado -->
+      <div id="simulado-intro-card" class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-[11px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md">
+              Banca VUNESP / Padrão PM
+            </span>
+            <h2 class="text-lg sm:text-xl font-black text-slate-900 mt-1.5">Simulado Oficial PM com Correção IA</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Prova objetiva inédita (A a E) cobrindo Português, Matemática/RLM, Direito, Atualidades e Informática.
+            </p>
+          </div>
+        </div>
+
+        <!-- Seleção de Tamanho do Simulado -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onclick="selectSimuladoSize(10)"
+            id="sim-size-10"
+            class="p-4 rounded-xl border-2 border-slate-900 bg-slate-900 text-white text-left transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-black">Simulado Tático • 10 Questões</span>
+              <span class="text-xs font-bold bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-md">+40 XP</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-1">2 questões por matéria • Rápido e direto ao ponto (~20 min)</p>
+          </button>
+
+          <button
+            type="button"
+            onclick="selectSimuladoSize(15)"
+            id="sim-size-15"
+            class="p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-slate-900 text-slate-900 text-left transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-black">Simulado Completo • 15 Questões</span>
+              <span class="text-xs font-bold bg-amber-400 text-slate-950 px-2 py-0.5 rounded-md">+60 XP</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">3 questões por matéria • Resistência padrão prova (~35 min)</p>
+          </button>
+        </div>
+
+        <div id="simulado-error" class="hidden p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-semibold"></div>
+
+        <div class="flex justify-end">
+          <button
+            type="button"
+            id="btn-start-simulado"
+            onclick="startOfficialSimulado()"
+            class="w-full sm:w-auto px-6 py-3.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-extrabold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+          >
+            <span id="btn-start-simulado-text">🚀 Gerar e Iniciar Simulado Oficial PM</span>
+            <svg id="btn-start-simulado-spinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Prova em Andamento -->
+      <div id="simulado-exam-container" class="hidden space-y-4">
+        <div class="bg-slate-900 text-white rounded-2xl p-4 flex items-center justify-between gap-3 sticky top-[108px] z-20 shadow-md">
+          <div>
+            <span class="text-[11px] uppercase font-bold text-amber-400">Simulado Oficial em Andamento</span>
+            <p id="simulado-progress-text" class="text-sm font-extrabold">Respondidas: 0 de 10</p>
+          </div>
+          <button
+            type="button"
+            onclick="cancelSimulado()"
+            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-700 text-xs font-bold text-slate-200 transition-colors"
+          >
+            Abortar Prova
+          </button>
+        </div>
+
+        <div id="simulado-questions-list" class="space-y-4">
+          <!-- Questões renderizadas dinamicamente -->
+        </div>
+
+        <div id="simulado-submit-warning" class="hidden p-3.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-xs sm:text-sm font-bold"></div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p class="text-xs text-slate-600 font-medium">Revise suas marcações antes de entregar o cartão de respostas.</p>
+          <button
+            type="button"
+            id="btn-finish-simulado"
+            onclick="finishAndGradeSimulado()"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-sm transition-all flex items-center justify-center gap-2"
+          >
+            <span id="btn-finish-simulado-text">✅ Entregar Prova e Ver Nota</span>
+            <svg id="btn-finish-simulado-spinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Resultado & Gabarito Comentado do Simulado -->
+      <div id="simulado-result-container" class="hidden space-y-5">
+        <div class="bg-white border-2 border-slate-900 rounded-2xl p-5 sm:p-6 shadow-md space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <span class="text-xs font-black uppercase tracking-wider text-slate-400">Boletim Oficial do Simulado PM</span>
+              <h3 id="sim-result-status" class="text-xl font-black text-slate-900 mt-0.5">Resultado da Prova</h3>
+              <p id="sim-result-hits" class="text-sm font-semibold text-slate-600 mt-0.5">0 acertos de 10 questões</p>
+            </div>
+            <div class="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shrink-0 self-start sm:self-center">
+              <span id="sim-result-score" class="text-3xl font-black text-emerald-400">0</span>
+              <span class="text-sm text-slate-300 font-semibold">/ 100 pts</span>
+            </div>
+          </div>
+
+          <!-- Desempenho por Matéria -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500">📊 Desempenho por Disciplina</h4>
+            <div id="sim-subject-breakdown" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+          </div>
+
+          <!-- Diagnóstico Duro & Dicas do Instrutor IA -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-rose-950 text-white border border-rose-700 space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🎖️</span>
+              <h4 class="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-300">
+                Diagnóstico do Instrutor & Plano de Correção
+              </h4>
+            </div>
+            <p id="sim-instructor-diagnosis" class="text-xs sm:text-sm text-rose-100 leading-relaxed whitespace-pre-line"></p>
+            <div class="pt-1">
+              <p class="text-xs font-extrabold uppercase text-emerald-300 mb-1.5">🎯 Dicas Obrigatórias de Estudo:</p>
+              <ul id="sim-instructor-tips" class="list-disc list-inside text-xs sm:text-sm text-white space-y-1"></ul>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="button"
+              onclick="resetSimuladoView()"
+              class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold transition-colors"
+            >
+              Fazer Novo Simulado
+            </button>
+          </div>
+        </div>
+
+        <!-- Gabarito Comentado Questão por Questão -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+          <h3 class="text-base font-black text-slate-900 border-b border-slate-100 pb-3">
+            📖 Gabarito Comentado (Questão por Questão)
+          </h3>
+          <div id="sim-annotated-answers" class="space-y-4"></div>
+        </div>
+      </div>
+
+      <!-- Histórico de Simulados Realizados -->
+      <div id="simulado-history-box" class="hidden bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <h3 class="text-sm font-extrabold text-slate-900">🏆 Histórico de Simulados Oficiais</h3>
+        <div id="simulado-history-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- ==================== SEÇÃO 3: CORRETOR DE REDAÇÃO COM IA ==================== -->
+    <section id="section-redacao" class="hidden space-y-5">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Corretor de Redação (Padrão PM)</h2>
+            <p class="text-sm text-slate-500">Escolha um tema oficial da PM, escreva no caderno e envie a foto.</p>
+          </div>
+          <label class="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl cursor-pointer transition-colors shrink-0">
+            <span>📄 Arquivo .txt</span>
+            <input type="file" id="essay-file-input" accept=".txt" class="hidden" onchange="handleFileUpload(event)" />
+          </label>
+        </div>
+
+        <!-- Seletor de Temas Prontos Padrão PM + Sortear -->
+        <div class="space-y-2.5 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <label for="pm-topic-select" class="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+              🎯 Banco de Temas Padrão PM
+            </label>
+            <button
+              type="button"
+              onclick="pickRandomPMTopic()"
+              class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+            >
+              <span>🎲 Sortear Tema PM</span>
+            </button>
+          </div>
+
+          <select
+            id="pm-topic-select"
+            onchange="applySelectedPMTopic(this.value)"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+          >
+            <option value="">-- Selecione um tema pronto ou digite o seu abaixo --</option>
+          </select>
+
+          <div class="space-y-1 pt-1">
+            <label for="essay-topic" class="block text-xs font-semibold text-slate-600">Tema escolhido (você pode editar ou digitar outro):</label>
+            <input
+              type="text"
+              id="essay-topic"
+              oninput="saveEssayDraft()"
+              placeholder="Ex: O papel da Polícia Militar na prevenção da criminalidade urbana"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm font-semibold text-slate-900 transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- Envio de Foto do Caderno (Recomendado) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-sm font-semibold text-slate-700">Foto da Redação no Caderno</label>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Sem corretor automático</span>
+          </div>
+
+          <!-- Botões de Câmera e Galeria -->
+          <div id="photo-upload-controls" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-center justify-center gap-2.5 p-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-900 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
+              <span class="text-2xl">📸</span>
+              <div class="text-left">
+                <span class="block text-sm font-bold text-slate-900">Tirar Foto Agora</span>
+                <span class="block text-xs text-slate-500">Abrir câmera do celular</span>
+              </div>
+              <input
+                type="file"
+                id="essay-camera-input"
+                accept="image/*"
+                capture="environment"
+                class="hidden"
+                onchange="handleImageUpload(event)"
+              />
+            </label>
+
+            <label class="flex items-center justify-center gap-2.5 p-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-900 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
+              <span class="text-2xl">🖼️</span>
+              <div class="text-left">
+                <span class="block text-sm font-bold text-slate-900">Escolher da Galeria</span>
+                <span class="block text-xs text-slate-500">JPG, PNG ou WEBP</span>
+              </div>
+              <input
+                type="file"
+                id="essay-gallery-input"
+                accept="image/*"
+                class="hidden"
+                onchange="handleImageUpload(event)"
+              />
+            </label>
+          </div>
+
+          <!-- Pré-visualização da Foto Carregada -->
+          <div id="photo-preview-container" class="hidden relative rounded-2xl border border-slate-200 bg-slate-900 overflow-hidden">
+            <img id="photo-preview-img" src="" alt="Prévia da redação no caderno" class="w-full max-h-80 object-contain mx-auto" />
+            <div class="p-3 bg-slate-900/95 text-white flex items-center justify-between gap-2">
+              <div class="truncate">
+                <p id="photo-file-name" class="text-xs font-semibold truncate">redacao.jpg</p>
+                <p class="text-[11px] text-emerald-400">Pronta para leitura manuscrita</p>
+              </div>
+              <button
+                type="button"
+                onclick="clearUploadedImage()"
+                class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 transition-colors"
+              >
+                Remover Foto
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500">Dica: Fotografe de cima para baixo, em local bem iluminado e com a letra legível.</p>
+        </div>
+
+        <!-- Texto da Redação (Opcional se enviar foto - salvo automaticamente) -->
+        <div class="space-y-1.5 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-between">
+            <label for="essay-text" class="block text-sm font-semibold text-slate-700">Ou digite/cole o rascunho (salvo automaticamente)</label>
+            <span id="word-count" class="text-xs text-slate-400 font-medium">0 palavras</span>
+          </div>
+          <textarea
+            id="essay-text"
+            rows="4"
+            oninput="updateWordCount(); saveEssayDraft();"
+            placeholder="Caso não envie foto, você pode digitar seu texto aqui..."
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm leading-relaxed transition-all resize-y"
+          ></textarea>
+        </div>
+
+        <!-- Mensagem de Erro / Aviso -->
+        <div id="essay-error" class="hidden p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium"></div>
+
+        <!-- Botão Corrigir -->
+        <div class="flex justify-end">
+          <button
+            id="btn-correct-essay"
+            onclick="correctEssay()"
+            class="w-full sm:w-auto px-6 py-3.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+          >
+            <span id="btn-correct-text">Avaliar Redação Agora</span>
+            <svg id="btn-correct-spinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Resultado da Correção -->
+      <div id="essay-result" class="hidden bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Resultado da Avaliação</span>
+            <h3 class="text-xl font-bold text-slate-900 mt-0.5">Desempenho Geral</h3>
+            <p id="result-summary" class="text-sm text-slate-600 mt-1"></p>
+          </div>
+          <div class="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shrink-0 self-start sm:self-center">
+            <span id="result-score" class="text-3xl font-extrabold">0</span>
+            <span class="text-sm text-slate-300 font-medium">/ 100</span>
+          </div>
+        </div>
+
+        <!-- Transcrição do Manuscrito -->
+        <div id="transcription-box" class="hidden p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-amber-900">📝 Transcrição fiel lida da foto</span>
+            <span class="text-[11px] text-amber-700 font-medium">Mantendo grafia original</span>
+          </div>
+          <p id="result-transcription" class="text-xs sm:text-sm text-slate-800 whitespace-pre-line leading-relaxed font-mono bg-white/80 p-3 rounded-lg border border-amber-100"></p>
+        </div>
+
+        <!-- Notas por Critério -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase text-slate-500">Gramática / Ortografia</span>
+              <span id="score-gramatica" class="text-sm font-extrabold text-slate-900">0/30</span>
+            </div>
+            <p id="comment-gramatica" class="text-xs text-slate-600 leading-relaxed"></p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase text-slate-500">Estrutura / Coesão</span>
+              <span id="score-estrutura" class="text-sm font-extrabold text-slate-900">0/30</span>
+            </div>
+            <p id="comment-estrutura" class="text-xs text-slate-600 leading-relaxed"></p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase text-slate-500">Argumentação / Tema</span>
+              <span id="score-argumentacao" class="text-sm font-extrabold text-slate-900">0/40</span>
+            </div>
+            <p id="comment-argumentacao" class="text-xs text-slate-600 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- Pontos Fortes e Onde Melhorar -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-100 space-y-2">
+            <h4 class="text-xs font-extrabold uppercase tracking-wider text-emerald-800">✅ Pontos Fortes</h4>
+            <ul id="result-strengths" class="list-disc list-inside text-xs sm:text-sm text-slate-700 space-y-1.5"></ul>
+          </div>
+          <div class="p-4 rounded-xl bg-rose-50/60 border border-rose-100 space-y-2">
+            <h4 class="text-xs font-extrabold uppercase tracking-wider text-rose-800">⚠️ Onde Melhorar (Erros & Ajustes)</h4>
+            <ul id="result-improvements" class="list-disc list-inside text-xs sm:text-sm text-slate-700 space-y-1.5"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico de Redações Corrigidas (Salvo no Celular) -->
+      <div id="essay-history-box" class="hidden bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <h3 class="text-sm font-extrabold text-slate-900">📚 Histórico de Redações Salvas neste Celular</h3>
+        <div id="essay-history-list" class="space-y-2"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Mapa da Missão (Dias Futuros Totalmente Bloqueados / Criptografados) -->
+  <div id="calendar-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between gap-2">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900">🗺️ Mapa da Missão (24/11/2026 a 27/02/2027)</h3>
+          <p class="text-xs text-slate-500">Toque em dias anteriores para revisar. Dias futuros seguem sob sigilo.</p>
+        </div>
+        <button onclick="closeCalendarModal()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 shrink-0">
+          Fechar
+        </button>
+      </div>
+      <div id="calendar-grid" class="p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        <!-- Dias renderizados via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Como Salvar no Celular & Backup -->
+  <div id="backup-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-extrabold text-slate-900">📲 Como usar todo dia no celular</h3>
+        <button onclick="closeBackupModal()" class="text-xs font-bold text-slate-500 hover:text-slate-900">Fechar</button>
+      </div>
+
+      <div class="space-y-2 text-xs sm:text-sm text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+        <p class="font-bold text-slate-900">1. Retomada Automática & Sigilo:</p>
+        <p>Seu progresso, anotações de revisão, simulados e notas ficam salvos na memória deste aparelho. Dias futuros abrem automaticamente conforme o calendário avança.</p>
+        <p class="font-bold text-slate-900 pt-1">2. Fixar na Tela Inicial (igual App):</p>
+        <p>• <strong>Android (Chrome):</strong> Toque nos <strong>3 pontinhos (⋮)</strong> → <em>"Adicionar à tela inicial"</em>.<br>• <strong>iPhone (Safari):</strong> Toque em <strong>Compartilhar (□↑)</strong> → <em>"Adicionar à Tela de Início"</em>.</p>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Código de Backup (caso troque de celular)</p>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            onclick="exportBackupCode()"
+            class="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors"
+          >
+            Copiar Código de Backup
+          </button>
+          <button
+            type="button"
+            onclick="toggleImportArea()"
+            class="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors"
+          >
+            Restaurar Código
+          </button>
+        </div>
+        <textarea
+          id="backup-code-box"
+          rows="3"
+          placeholder="Cole aqui o código de backup para restaurar..."
+          class="hidden w-full p-2.5 rounded-xl border border-slate-300 text-xs font-mono bg-slate-50"
+        ></textarea>
+        <button
+          id="btn-confirm-import"
+          type="button"
+          onclick="importBackupCode()"
+          class="hidden w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+        >
+          Confirmar Restauração
+        </button>
+        <p id="backup-feedback" class="hidden text-xs font-bold text-emerald-700"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de Feedback (+XP) -->
+  <div id="xp-toast" class="fixed bottom-5 right-5 z-40 translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-semibold flex items-center gap-2 pointer-events-none">
+    <span id="xp-toast-badge" class="text-emerald-400">+10 XP</span> <span id="xp-toast-msg">Lição concluída e salva!</span>
+  </div>
+
+  <script>
+    // ==================== BANCO DE TEMAS OFICIAIS PADRÃO PM ====================
+    const PM_ESSAY_TOPICS = [
+      "O papel da Polícia Militar na prevenção da criminalidade e na promoção da cidadania",
+      "Desafios da segurança pública no Brasil e a importância do policiamento comunitário",
+      "O uso de câmeras corporais pelos policiais militares: transparência e proteção institucional",
+      "Violência doméstica contra a mulher e a atuação preventiva das forças de segurança",
+      "Impacto das redes sociais e da desinformação na segurança e na ordem pública",
+      "Segurança no trânsito como questão de saúde pública e responsabilidade cidadã",
+      "O combate ao crime organizado e o fortalecimento da inteligência policial",
+      "A importância da educação e do esporte na prevenção da entrada de jovens na criminalidade",
+      "Saúde mental dos profissionais de segurança pública: desafios e valorização da carreira",
+      "Policiamento ostensivo e direitos humanos: o equilíbrio necessário no Estado Democrático de Direito",
+      "Crimes cibernéticos e estelionato digital: novos desafios para a segurança pública brasileira",
+      "A preservação ambiental e o papel da Polícia Militar Ambiental no desenvolvimento sustentável",
+      "A crise no sistema prisional brasileiro e seus reflexos na segurança das cidades",
+      "O papel da família e da escola na formação ética e no respeito às leis"
+    ];
+
+    // ==================== MENSAGENS DURAS DO INSTRUTOR MILITAR ====================
+    const HARSH_INSTRUCTOR_SPEECHES = [
+      "VOCÊ SUMIU! Enquanto você dorme ou inventa desculpa, tem 50 mil candidatos fazendo questão agora. Se não se esforçar, NÃO VAI PASSAR e vai assistir a formatura de fora!",
+      "DESERÇÃO DETECTADA! A farda não escolhe preguiçoso. Cada dia que você pula é uma vaga entregue de bandeja para o seu concorrente. Se não se esforçar, NÃO VAI PASSAR!",
+      "ACORDA, RECRUTA! O edital não tem pena de quem está cansado. Você faltou à missão e sua nota está caindo. Pague o atraso hoje ou desista do sonho da farda!",
+      "DISCIPLINA ZERO! Concurso da PM se vence na constância diária, não na sorte. Você abandonou o posto e levou penalidade. Se não se esforçar, NÃO VAI PASSAR!"
+    ];
+
+    // ==================== CONFIGURAÇÕES DO CRONOGRAMA FECHADO ====================
+    const START_DATE_ISO = '2026-11-24'; // 24/11/2026
+    const EXAM_DATE_ISO  = '2027-02-27'; // 27/02/2027 (96 dias)
+    const XP_PER_TASK    = 10;
+    const PENALTY_PER_MISSED_DAY = 15;
+    const STORAGE_KEY    = 'pm_estudos_app_v4';
+
+    const WEEKDAYS_PT = [
+      'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
+      'Quinta-feira', 'Sexta-feira', 'Sábado'
+    ];
+
+    // Matérias oficiais para contabilização de lições concluídas
+    const SUBJECTS_META = [
+      { key: 'portugues',   label: 'Língua Portuguesa', icon: '📖', barColor: 'bg-blue-600' },
+      { key: 'matematica',  label: 'Matemática / RLM', icon: '📐', barColor: 'bg-indigo-600' },
+      { key: 'direito',     label: 'Noções de Direito / Adm. Pública', icon: '⚖️', barColor: 'bg-violet-600' },
+      { key: 'atualidades', label: 'História, Geo. e Atualidades', icon: '🌎', barColor: 'bg-cyan-600' },
+      { key: 'informatica', label: 'Noções de Informática', icon: '💻', barColor: 'bg-sky-600' },
+      { key: 'redacao',     label: 'Redação (Caderno/Foto)', icon: '✍️', barColor: 'bg-pink-600' },
+      { key: 'taf',         label: 'Treino TAF (Físico)', icon: '🏃', barColor: 'bg-emerald-600' },
+      { key: 'simulado',    label: 'Simulados & Revisões', icon: '🎯', barColor: 'bg-amber-500' }
+    ];
+
+    // Gera as tarefas de cada dia (com Simulado Completo oficial nos domingos a cada 15 dias)
+    function getTasksForDate(dateISO, phase, dayNumber) {
+      const d = new Date(dateISO + 'T00:00:00');
+      const dow = d.getDay();
+
+      if (dateISO === EXAM_DATE_ISO) {
+        return [
+          { id: `${dateISO}-1`, subject: 'simulado', text: 'DIA DA PROVA PM • Apresentação com antecedência e foco total!', tag: 'Prova' },
+          { id: `${dateISO}-2`, subject: 'simulado', text: 'Conferir documento original, caneta preta transparente e cartão', tag: 'Missão' }
+        ];
+      }
+
+      if (dateISO === '2027-02-26') {
+        return [
+          { id: `${dateISO}-1`, subject: 'simulado', text: 'Revisão leve de fórmulas e conectivos de Redação', tag: 'Revisão' },
+          { id: `${dateISO}-2`, subject: 'taf', text: 'Descanso físico e separação do material da prova', tag: 'Descanso' }
+        ];
+      }
+
+      // Domingos de Simulado Completo (a cada 15 dias: dias 13, 27, 41, 55, 69, 83)
+      const isBiweeklySimuladoSunday = (dow === 0 && (dayNumber === 13 || dayNumber === 27 || dayNumber === 41 || dayNumber === 55 || dayNumber === 69 || dayNumber === 83));
+
+      if (isBiweeklySimuladoSunday) {
+        return [
+          { id: `${dateISO}-1`, subject: 'simulado', isOfficialSimulado: true, text: 'Simulado Completo Oficial PM (Prova Objetiva IA + Nota e Diagnóstico)', tag: 'Simulado' },
+          { id: `${dateISO}-2`, subject: 'simulado', text: 'Revisar gabarito comentado e anotar pontos fracos do simulado', tag: 'Revisão' }
+        ];
+      }
+
+      if (phase === 1) {
+        switch (dow) {
+          case 1: return [
+            { id: `${dateISO}-1`, subject: 'portugues', text: 'Língua Portuguesa: Classes Gramaticais e Sintaxe (Teoria)', tag: 'Português' },
+            { id: `${dateISO}-2`, subject: 'portugues', text: 'Resolver 20 questões de Português (Banca VUNESP/PM)', tag: 'Português' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Corrida contínua 2,4 km', tag: 'TAF' }
+          ];
+          case 2: return [
+            { id: `${dateISO}-1`, subject: 'matematica', text: 'Matemática / RLM: Porcentagem, Razão e Proporção', tag: 'Matemática' },
+            { id: `${dateISO}-2`, subject: 'matematica', text: 'Resolver 15 questões de Matemática básica', tag: 'Matemática' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Barra fixa / Flexão de braço', tag: 'TAF' }
+          ];
+          case 3: return [
+            { id: `${dateISO}-1`, subject: 'direito', text: 'Direito Constitucional & Adm. Pública (Art. 5º e 144)', tag: 'Direito' },
+            { id: `${dateISO}-2`, subject: 'direito', text: 'Resolver 20 questões de Direito', tag: 'Direito' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Alongamento e mobilidade articular', tag: 'TAF' }
+          ];
+          case 4: return [
+            { id: `${dateISO}-1`, subject: 'portugues', text: 'Língua Portuguesa: Concordância Verbal e Nominal', tag: 'Português' },
+            { id: `${dateISO}-2`, subject: 'redacao', text: 'Redação no caderno (1 texto dissertativo + corrigir por foto)', tag: 'Redação' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Tiros de velocidade + corrida', tag: 'TAF' }
+          ];
+          case 5: return [
+            { id: `${dateISO}-1`, subject: 'atualidades', text: 'História, Geografia e Atualidades do Brasil', tag: 'Atualidades' },
+            { id: `${dateISO}-2`, subject: 'atualidades', text: 'Resolver 20 questões de Atualidades e Conhecimentos Gerais', tag: 'Atualidades' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Abdominal remador (meta edital)', tag: 'TAF' }
+          ];
+          case 6: return [
+            { id: `${dateISO}-1`, subject: 'informatica', text: 'Noções de Informática (Windows, Word, Excel e Segurança)', tag: 'Informática' },
+            { id: `${dateISO}-2`, subject: 'simulado', text: 'Revisão ativa do caderno de erros da semana', tag: 'Revisão' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Simulado físico TAF completo cronometrado', tag: 'TAF' }
+          ];
+          default: return [
+            { id: `${dateISO}-1`, subject: 'simulado', text: 'Bateria Semanal de Revisão (30 questões mistas)', tag: 'Revisão' },
+            { id: `${dateISO}-2`, subject: 'simulado', text: 'Mapeamento dos assuntos com menor acerto na semana', tag: 'Revisão' }
+          ];
+        }
+      } else if (phase === 2) {
+        switch (dow) {
+          case 1: return [
+            { id: `${dateISO}-1`, subject: 'portugues', text: 'Português: Interpretação de Texto e Crase (Aprofundamento)', tag: 'Português' },
+            { id: `${dateISO}-2`, subject: 'portugues', text: 'Resolver 30 questões de Português nível prova', tag: 'Português' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Corrida ritmo de prova', tag: 'TAF' }
+          ];
+          case 2: return [
+            { id: `${dateISO}-1`, subject: 'matematica', text: 'RLM: Tabelas-verdade, Equivalências e Geometria', tag: 'Matemática' },
+            { id: `${dateISO}-2`, subject: 'matematica', text: 'Resolver 25 questões de Matemática e RLM', tag: 'Matemática' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Força (Barra + Flexão + Abdominal)', tag: 'TAF' }
+          ];
+          case 3: return [
+            { id: `${dateISO}-1`, subject: 'direito', text: 'Direito Penal Militar & Legislação Específica PM', tag: 'Direito' },
+            { id: `${dateISO}-2`, subject: 'direito', text: 'Resolver 30 questões de Direito e Legislação', tag: 'Direito' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Recuperação muscular ativa', tag: 'TAF' }
+          ];
+          case 4: return [
+            { id: `${dateISO}-1`, subject: 'portugues', text: 'Português: Pontuação e Coesão Referencial', tag: 'Português' },
+            { id: `${dateISO}-2`, subject: 'redacao', text: 'Redação no caderno cronometrada (50 min + foto)', tag: 'Redação' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Corrida 12 minutos', tag: 'TAF' }
+          ];
+          case 5: return [
+            { id: `${dateISO}-1`, subject: 'atualidades', text: 'Atualidades & Geopolítica (Foco últimos 12 meses)', tag: 'Atualidades' },
+            { id: `${dateISO}-2`, subject: 'atualidades', text: 'Resolver 25 questões de Atualidades e História', tag: 'Atualidades' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Abdominal + Barra', tag: 'TAF' }
+          ];
+          case 6: return [
+            { id: `${dateISO}-1`, subject: 'informatica', text: 'Informática: Bateria de 30 questões de provas anteriores', tag: 'Informática' },
+            { id: `${dateISO}-2`, subject: 'simulado', text: 'Revisão intensiva dos erros acumulados', tag: 'Revisão' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Teste TAF oficial simulado', tag: 'TAF' }
+          ];
+          default: return [
+            { id: `${dateISO}-1`, subject: 'simulado', text: 'Revisão Consolidada das 5 matérias (40 questões)', tag: 'Revisão' },
+            { id: `${dateISO}-2`, subject: 'simulado', text: 'Releitura de resumos e mapas mentais da semana', tag: 'Revisão' }
+          ];
+        }
+      } else {
+        switch (dow) {
+          case 1: return [
+            { id: `${dateISO}-1`, subject: 'portugues', text: 'Bateria Reta Final: 40 questões de Português', tag: 'Português' },
+            { id: `${dateISO}-2`, subject: 'portugues', text: 'Revisão relâmpago de regras gramaticais mais cobradas', tag: 'Português' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Manutenção de ritmo de corrida', tag: 'TAF' }
+          ];
+          case 2: return [
+            { id: `${dateISO}-1`, subject: 'matematica', text: 'Bateria Reta Final: 30 questões de Matemática/RLM', tag: 'Matemática' },
+            { id: `${dateISO}-2`, subject: 'matematica', text: 'Revisão de fórmulas essenciais', tag: 'Matemática' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Força explosiva (Barra/Flexão)', tag: 'TAF' }
+          ];
+          case 3: return [
+            { id: `${dateISO}-1`, subject: 'direito', text: 'Leitura de Lei Seca (Constituição e Legislação PM)', tag: 'Direito' },
+            { id: `${dateISO}-2`, subject: 'direito', text: 'Bateria Reta Final: 40 questões de Direito', tag: 'Direito' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Alongamento e prevenção de lesões', tag: 'TAF' }
+          ];
+          case 4: return [
+            { id: `${dateISO}-1`, subject: 'redacao', text: 'Redação Reta Final no caderno (Tema provável + foto)', tag: 'Redação' },
+            { id: `${dateISO}-2`, subject: 'redacao', text: 'Revisão de esqueleto e repertórios socioculturais', tag: 'Redação' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Corrida 12 min', tag: 'TAF' }
+          ];
+          case 5: return [
+            { id: `${dateISO}-1`, subject: 'atualidades', text: 'Revisão Geral: 25 questões de Atualidades e Geografia', tag: 'Atualidades' },
+            { id: `${dateISO}-2`, subject: 'informatica', text: 'Revisão Geral: 25 questões de Informática', tag: 'Informática' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'Treino TAF: Abdominal', tag: 'TAF' }
+          ];
+          case 6: return [
+            { id: `${dateISO}-1`, subject: 'simulado', text: 'Bateria Cronometrada com preenchimento de gabarito', tag: 'Revisão' },
+            { id: `${dateISO}-2`, subject: 'simulado', text: 'Análise de tempo por disciplina', tag: 'Revisão' },
+            { id: `${dateISO}-3`, subject: 'taf', text: 'TAF leve de manutenção', tag: 'TAF' }
+          ];
+          default: return [
+            { id: `${dateISO}-1`, subject: 'simulado', text: 'Revisão Geral Reta Final (Pontos críticos do edital)', tag: 'Revisão' },
+            { id: `${dateISO}-2`, subject: 'simulado', text: 'Ajuste final de estratégia de prova', tag: 'Revisão' }
+          ];
+        }
+      }
+    }
+
+    function buildClosedSchedule() {
+      const days = [];
+      let current = new Date(START_DATE_ISO + 'T00:00:00');
+      const end = new Date(EXAM_DATE_ISO + 'T00:00:00');
+      let index = 1;
+
+      while (current <= end) {
+        const y = current.getFullYear();
+        const m = String(current.getMonth() + 1).padStart(2, '0');
+        const d = String(current.getDate()).padStart(2, '0');
+        const iso = `${y}-${m}-${d}`;
+        const formattedBR = `${d}/${m}/${y}`;
+        const weekday = WEEKDAYS_PT[current.getDay()];
+
+        let phase = 1;
+        if (iso >= '2027-02-02') phase = 3;
+        else if (iso >= '2027-01-05') phase = 2;
+
+        days.push({
+          dayNumber: index,
+          dateISO: iso,
+          formattedBR,
+          weekday,
+          phase,
+          tasks: getTasksForDate(iso, phase, index)
+        });
+
+        current.setDate(current.getDate() + 1);
+        index++;
+      }
+      return days;
+    }
+
+    const CLOSED_SCHEDULE = buildClosedSchedule();
+
+    // ==================== ESTADO & PERSISTÊNCIA COMPLETA ====================
+    let appState = loadState();
+    let viewedDateISO = getActiveReferenceDate();
+    let uploadedEssayImage = null;
+
+    // Estado do Simulado IA
+    let selectedSimuladoSize = 10;
+    let activeSimulado = null; // { questions: [], userAnswers: {}, targetTaskId: null }
+
+    function getDeviceTodayISO() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const iso = `${y}-${m}-${d}`;
+      if (iso < START_DATE_ISO) return START_DATE_ISO;
+      if (iso > EXAM_DATE_ISO) return EXAM_DATE_ISO;
+      return iso;
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return {
+            completedTasks: parsed.completedTasks || {},
+            simulatedDate: parsed.simulatedDate || null,
+            dayNotes: parsed.dayNotes || {},
+            aiFlashReviews: parsed.aiFlashReviews || {},
+            bonusXP: parsed.bonusXP || 0,
+            simuladoHistory: parsed.simuladoHistory || [],
+            draftTopic: parsed.draftTopic || '',
+            draftText: parsed.draftText || '',
+            essayHistory: parsed.essayHistory || []
+          };
+        }
+      } catch (e) {}
+      return {
+        completedTasks: {},
+        simulatedDate: null,
+        dayNotes: {},
+        aiFlashReviews: {},
+        bonusXP: 0,
+        simuladoHistory: [],
+        draftTopic: '',
+        draftText: '',
+        essayHistory: []
+      };
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {}
+    }
+
+    function getActiveReferenceDate() {
+      return appState.simulatedDate || getDeviceTodayISO();
+    }
+
+    function diffDaysBetween(dateStr1, dateStr2) {
+      const d1 = new Date(dateStr1 + 'T00:00:00');
+      const d2 = new Date(dateStr2 + 'T00:00:00');
+      return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+    }
+
+    // ==================== NOTIFICAÇÕES & COBRANÇA DO INSTRUTOR ====================
+    function updateNotifButtonUI() {
+      const btn = document.getElementById('btn-notif-header');
+      const label = document.getElementById('notif-btn-label');
+      if (!('Notification' in window)) {
+        btn.classList.add('hidden');
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        btn.className = 'px-2.5 py-1.5 rounded-lg bg-emerald-100 text-emerald-900 text-xs font-extrabold transition-colors flex items-center gap-1';
+        label.textContent = 'Cobrança Ativa';
+      } else if (Notification.permission === 'denied') {
+        btn.className = 'px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 text-xs font-bold transition-colors flex items-center gap-1';
+        label.textContent = 'Notif. Bloqueada';
+      }
+    }
+
+    async function requestInstructorNotifications() {
+      if (!('Notification' in window)) return;
+      try {
+        const perm = await Notification.requestPermission();
+        updateNotifButtonUI();
+        if (perm === 'granted') {
+          new Notification('🎖️ INSTRUTOR PM • COBRANÇA ATIVADA', {
+            body: 'A partir de agora vou te cobrar se você sumir! Cumpra sua missão diária ou não vai passar.'
+          });
+          showXpToast('🔔', 'Lembretes do Instrutor ativados!');
+        }
+      } catch (e) {}
+    }
+
+    function triggerHarshNotificationIfNeeded(stats) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const todayKey = `pm_notified_${stats.refDate}`;
+      if (sessionStorage.getItem(todayKey)) return;
+
+      if (stats.lateDays.length > 0) {
+        new Notification(`🚨 VOCÊ SUMIU! (${stats.lateDays.length} ${stats.lateDays.length === 1 ? 'falta' : 'faltas'})`, {
+          body: 'Enquanto você inventa desculpa, 50 mil candidatos estão estudando. Se não se esforçar, NÃO VAI PASSAR!'
+        });
+        sessionStorage.setItem(todayKey, '1');
+      } else {
+        const todayObj = CLOSED_SCHEDULE.find(d => d.dateISO === stats.refDate);
+        const doneToday = todayObj ? todayObj.tasks.filter(t => appState.completedTasks[t.id]).length : 0;
+        if (todayObj && doneToday === 0) {
+          new Notification('⚡ MISSÃO DO DIA PENDENTE • RUMO À FARDA', {
+            body: `Sua missão de hoje (${todayObj.formattedBR}) está zerada! Entre agora e cumpra antes de levar falta.`
+          });
+          sessionStorage.setItem(todayKey, '1');
+        }
+      }
+    }
+
+    // ==================== BLOQUEIO RIGOROSO DO FUTURO (ZERO SPOILER) ====================
+    function navigateViewedDay(offset) {
+      const refDate = getActiveReferenceDate();
+      const idx = CLOSED_SCHEDULE.findIndex(d => d.dateISO === viewedDateISO);
+      const nextIdx = idx + offset;
+      if (nextIdx < 0 || nextIdx >= CLOSED_SCHEDULE.length) return;
+
+      const targetDay = CLOSED_SCHEDULE[nextIdx];
+      if (targetDay.dateISO > refDate) {
+        showFutureLockBanner();
+        return;
+      }
+
+      hideFutureLockBanner();
+      viewedDateISO = targetDay.dateISO;
+      renderAll();
+    }
+
+    function handleNextDayClick() {
+      const refDate = getActiveReferenceDate();
+      const idx = CLOSED_SCHEDULE.findIndex(d => d.dateISO === viewedDateISO);
+      const nextIdx = idx + 1;
+      if (nextIdx >= CLOSED_SCHEDULE.length || CLOSED_SCHEDULE[nextIdx].dateISO > refDate) {
+        showFutureLockBanner();
+        return;
+      }
+      navigateViewedDay(1);
+    }
+
+    function showFutureLockBanner() {
+      const banner = document.getElementById('future-lock-banner');
+      banner.classList.remove('hidden');
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function hideFutureLockBanner() {
+      document.getElementById('future-lock-banner').classList.add('hidden');
+    }
+
+    function goToTodayMission() {
+      hideFutureLockBanner();
+      viewedDateISO = getActiveReferenceDate();
+      renderAll();
+    }
+
+    function jumpToOldestLateDay() {
+      const stats = analyzeProgress();
+      if (stats.lateDays.length > 0) {
+        hideFutureLockBanner();
+        viewedDateISO = stats.lateDays[0].dateISO;
+        renderAll();
+      }
+    }
+
+    function handleReferenceDateChange(newDate) {
+      if (!newDate) return;
+      if (newDate < START_DATE_ISO) newDate = START_DATE_ISO;
+      if (newDate > EXAM_DATE_ISO) newDate = EXAM_DATE_ISO;
+      appState.simulatedDate = newDate;
+      viewedDateISO = newDate;
+      hideFutureLockBanner();
+      saveState();
+      renderAll();
+    }
+
+    function advanceOneDay() {
+      const ref = getActiveReferenceDate();
+      if (ref >= EXAM_DATE_ISO) return;
+      const d = new Date(ref + 'T00:00:00');
+      d.setDate(d.getDate() + 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const nextISO = `${y}-${m}-${day}`;
+      appState.simulatedDate = nextISO;
+      viewedDateISO = nextISO;
+      hideFutureLockBanner();
+      saveState();
+      renderAll();
+    }
+
+    // ==================== NAVEGAÇÃO ENTRE ABAS ====================
+    function switchTab(tab) {
+      const sections = {
+        cronograma: document.getElementById('section-cronograma'),
+        simulado: document.getElementById('section-simulado'),
+        redacao: document.getElementById('section-redacao')
+      };
+      const buttons = {
+        cronograma: document.getElementById('tab-btn-cronograma'),
+        simulado: document.getElementById('tab-btn-simulado'),
+        redacao: document.getElementById('tab-btn-redacao')
+      };
+
+      Object.keys(sections).forEach(key => {
+        if (key === tab) {
+          sections[key].classList.remove('hidden');
+          buttons[key].className = 'flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all tab-active';
+        } else {
+          sections[key].classList.add('hidden');
+          buttons[key].className = 'flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all tab-inactive';
+        }
+      });
+    }
+
+    // ==================== ANÁLISE DE PROGRESSO, ATRASOS E MATÉRIAS ====================
+    function analyzeProgress() {
+      const refDate = getActiveReferenceDate();
+      // Garante que viewedDateISO nunca esteja no futuro
+      if (viewedDateISO > refDate) {
+        viewedDateISO = refDate;
+      }
+
+      let earnedXP = appState.bonusXP || 0;
+      let totalTasksCount = 0;
+      let totalDoneTasksCount = 0;
+      let lateDays = [];
+
+      const subjectStats = {};
+      SUBJECTS_META.forEach(s => {
+        subjectStats[s.key] = { done: 0, total: 0 };
+      });
+
+      CLOSED_SCHEDULE.forEach(dayObj => {
+        let doneInDay = 0;
+        dayObj.tasks.forEach(t => {
+          totalTasksCount++;
+          if (subjectStats[t.subject]) {
+            subjectStats[t.subject].total++;
+          }
+          if (appState.completedTasks[t.id]) {
+            doneInDay++;
+            totalDoneTasksCount++;
+            earnedXP += XP_PER_TASK;
+            if (subjectStats[t.subject]) {
+              subjectStats[t.subject].done++;
+            }
+          }
+        });
+
+        if (dayObj.dateISO < refDate && doneInDay === 0) {
+          lateDays.push(dayObj);
+        }
+      });
+
+      // Ofensiva
+      let streak = 0;
+      const pastAndToday = CLOSED_SCHEDULE.filter(d => d.dateISO <= refDate).reverse();
+      for (let i = 0; i < pastAndToday.length; i++) {
+        const dObj = pastAndToday[i];
+        const doneInDay = dObj.tasks.filter(t => appState.completedTasks[t.id]).length;
+        if (doneInDay > 0) {
+          streak++;
+        } else {
+          if (i === 0 && dObj.dateISO === refDate) continue;
+          break;
+        }
+      }
+
+      const penaltyXP = lateDays.length * PENALTY_PER_MISSED_DAY;
+      const netXP = Math.max(0, earnedXP - penaltyXP);
+
+      return {
+        refDate,
+        earnedXP,
+        penaltyXP,
+        netXP,
+        totalTasksCount,
+        totalDoneTasksCount,
+        lateDays,
+        streak,
+        subjectStats
+      };
+    }
+
+    function getTagClasses(tag) {
+      switch (tag) {
+        case 'TAF': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        case 'Português': return 'bg-blue-50 text-blue-700 border-blue-200';
+        case 'Matemática': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+        case 'Direito': return 'bg-violet-50 text-violet-700 border-violet-200';
+        case 'Atualidades': return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+        case 'Informática': return 'bg-sky-50 text-sky-700 border-sky-200';
+        case 'Redação': return 'bg-pink-50 text-pink-700 border-pink-200';
+        case 'Simulado':
+        case 'Revisão': return 'bg-amber-50 text-amber-700 border-amber-200';
+        default: return 'bg-slate-100 text-slate-700 border-slate-200';
+      }
+    }
+
+    function renderAll() {
+      const stats = analyzeProgress();
+      const refDate = stats.refDate;
+
+      document.getElementById('reference-date-input').value = refDate;
+
+      const daysLeft = Math.max(0, diffDaysBetween(refDate, EXAM_DATE_ISO));
+      document.getElementById('countdown-days').textContent = daysLeft;
+
+      let phaseText = 'Fase 1: Base Teórica (24/11 a 04/01)';
+      if (refDate >= '2027-02-02') phaseText = 'Fase 3: Reta Final & Simulados (02/02 a 27/02)';
+      else if (refDate >= '2027-01-05') phaseText = 'Fase 2: Aprofundamento (05/01 a 01/02)';
+      document.getElementById('current-phase-label').textContent = phaseText;
+
+      document.getElementById('streak-count').textContent = stats.streak;
+      document.getElementById('late-days-count').textContent = `${stats.lateDays.length}d`;
+      document.getElementById('total-xp').textContent = `${stats.netXP} XP`;
+
+      // Patente
+      const xp = stats.netXP;
+      let rank = 'Recruta';
+      if (xp >= 1800) rank = 'Tenente';
+      else if (xp >= 1100) rank = 'Sargento';
+      else if (xp >= 500) rank = 'Cabo';
+      else if (xp >= 150) rank = 'Soldado';
+      document.getElementById('rank-name').textContent = rank;
+
+      // Alerta severo de atraso
+      const alertBox = document.getElementById('inactivity-alert');
+      const alertDetails = document.getElementById('inactivity-details');
+      const penaltyBadge = document.getElementById('penalty-badge');
+      const speechEl = document.getElementById('inactivity-speech');
+
+      if (stats.lateDays.length > 0) {
+        alertBox.classList.remove('hidden');
+        const qtd = stats.lateDays.length;
+        const datasAtrasadas = stats.lateDays.slice(-3).map(d => d.formattedBR).join(', ');
+        const extra = qtd > 3 ? ` (+${qtd - 3} dia(s))` : '';
+        penaltyBadge.textContent = `-${stats.penaltyXP} XP (${qtd} ${qtd === 1 ? 'falta' : 'faltas'})`;
+        speechEl.textContent = HARSH_INSTRUCTOR_SPEECHES[qtd % HARSH_INSTRUCTOR_SPEECHES.length];
+        alertDetails.textContent = `Dias abandonados: ${datasAtrasadas}${extra}. Cada dia sem estudar arranca -15 XP da sua ficha. Pague o atraso agora!`;
+      } else {
+        alertBox.classList.add('hidden');
+      }
+
+      // Lembrete persistente da missão de hoje
+      const todayObj = CLOSED_SCHEDULE.find(d => d.dateISO === refDate);
+      const todayDone = todayObj ? todayObj.tasks.filter(t => appState.completedTasks[t.id]).length : 0;
+      const pendingReminder = document.getElementById('daily-pending-reminder');
+      if (todayObj && todayDone < todayObj.tasks.length) {
+        pendingReminder.classList.remove('hidden');
+      } else {
+        pendingReminder.classList.add('hidden');
+      }
+
+      triggerHarshNotificationIfNeeded(stats);
+      renderSingleDayMission(stats);
+      renderSubjectsProgress(stats);
+    }
+
+    function renderSingleDayMission(stats) {
+      const refDate = stats.refDate;
+      const idx = CLOSED_SCHEDULE.findIndex(d => d.dateISO === viewedDateISO);
+      const dayObj = CLOSED_SCHEDULE[idx] || CLOSED_SCHEDULE[0];
+
+      document.getElementById('btn-prev-day').disabled = idx <= 0;
+
+      // Botão Próximo Dia mostra cadeado se estiver no dia atual (bloqueio futuro)
+      const isAtToday = dayObj.dateISO >= refDate;
+      const nextBtn = document.getElementById('btn-next-day');
+      const nextBtnLabel = document.getElementById('btn-next-day-label');
+      if (isAtToday) {
+        nextBtn.className = 'px-3.5 py-2 rounded-xl bg-slate-200/80 border border-slate-300 text-xs font-bold text-slate-500 flex items-center gap-1.5 cursor-not-allowed';
+        nextBtnLabel.textContent = '🔒 Próximo Dia Bloqueado';
+      } else {
+        nextBtn.className = 'px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all shadow-2xs flex items-center gap-1.5';
+        nextBtnLabel.textContent = 'Próximo Dia →';
+      }
+
+      const btnGoToday = document.getElementById('btn-go-today');
+      if (dayObj.dateISO !== refDate) {
+        btnGoToday.classList.remove('hidden');
+      } else {
+        btnGoToday.classList.add('hidden');
+      }
+
+      const doneCount = dayObj.tasks.filter(t => appState.completedTasks[t.id]).length;
+      const totalCount = dayObj.tasks.length;
+      const allDone = doneCount === totalCount;
+      const isToday = dayObj.dateISO === refDate;
+      const isPast = dayObj.dateISO < refDate;
+      const isLate = isPast && doneCount === 0;
+
+      let cardBorder = 'bg-white border-slate-200';
+      let headerBadge = `<span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Dia ${dayObj.dayNumber}/96 • ${doneCount}/${totalCount}</span>`;
+      let statusBanner = '';
+
+      if (isLate) {
+        cardBorder = 'bg-rose-50/70 border-2 border-rose-500';
+        headerBadge = `<span class="text-xs font-black px-3 py-1 rounded-full bg-rose-600 text-white uppercase">🚨 FALTA • -15 XP</span>`;
+        statusBanner = `
+          <div class="mb-4 p-3 rounded-xl bg-rose-950 text-rose-100 text-xs sm:text-sm font-bold">
+            ⚠️ Você não apareceu neste dia! Revise e conclua as lições abaixo para apagar a falta da sua ficha.
+          </div>
+        `;
+      } else if (isPast) {
+        cardBorder = 'bg-white border-2 border-indigo-200';
+        headerBadge = `<span class="text-xs font-extrabold px-3 py-1 rounded-full bg-indigo-100 text-indigo-800">📖 MODO REVISÃO • ${doneCount}/${totalCount}</span>`;
+        statusBanner = `
+          <div class="mb-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950 text-xs font-semibold flex items-center justify-between gap-2">
+            <span>Você está revisando o que foi estudado em <strong>${dayObj.formattedBR}</strong>.</span>
+          </div>
+        `;
+      } else if (allDone) {
+        cardBorder = 'bg-white border-2 border-emerald-500';
+        headerBadge = `<span class="text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">✅ MISSÃO CUMPRIDA (+${doneCount * XP_PER_TASK} XP)</span>`;
+      } else if (isToday) {
+        cardBorder = 'bg-white border-2 border-slate-900';
+        headerBadge = `<span class="text-xs font-black px-3 py-1 rounded-full bg-amber-400 text-slate-950 uppercase">🔥 MISSÃO DE HOJE • ${doneCount}/${totalCount}</span>`;
+      }
+
+      // Verifica se este dia possui Simulado Oficial PM
+      const simuladoTask = dayObj.tasks.find(t => t.isOfficialSimulado);
+      const simuladoCTA = simuladoTask ? `
+        <div class="mt-4 p-4 rounded-2xl bg-slate-900 text-white border border-amber-400/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <span class="text-[11px] font-black uppercase tracking-wider text-amber-400">🎯 Dia de Prova Simulada</span>
+            <p class="text-sm font-extrabold mt-0.5">Simulado Oficial PM disponível agora!</p>
+            <p class="text-xs text-slate-300">Faça a prova gerada por IA e receba nota de 0 a 100 + dicas do instrutor.</p>
+          </div>
+          <button
+            type="button"
+            onclick="launchSimuladoFromMission('${simuladoTask.id}')"
+            class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black uppercase tracking-wide shrink-0 transition-colors"
+          >
+            Iniciar Simulado Oficial PM →
+          </button>
+        </div>
+      ` : '';
+
+      // Bloco de Revisão & Anotações (disponível em dias anteriores e hoje)
+      const savedNote = appState.dayNotes[dayObj.dateISO] || '';
+      const savedFlashReview = appState.aiFlashReviews[dayObj.dateISO] || '';
+
+      const reviewToolsBlock = `
+        <div class="mt-5 pt-4 border-t border-slate-100 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+              🧠 Caderno de Revisão & Resumo do Dia (${dayObj.formattedBR})
+            </span>
+            <button
+              type="button"
+              id="btn-flash-review"
+              onclick="generateDayFlashReview('${dayObj.dateISO}')"
+              class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+            >
+              <span id="btn-flash-review-text">✨ Gerar Flash-Revisão IA deste dia</span>
+            </button>
+          </div>
+
+          <div id="flash-review-output-${dayObj.dateISO}" class="${savedFlashReview ? '' : 'hidden'} p-3.5 rounded-xl bg-indigo-50/80 border border-indigo-200 text-xs sm:text-sm text-slate-800 whitespace-pre-line leading-relaxed">
+            ${escapeHTML(savedFlashReview)}
+          </div>
+
+          <div class="space-y-1">
+            <label for="day-note-${dayObj.dateISO}" class="block text-xs font-semibold text-slate-500">
+              Suas anotações, bizus ou erros deste dia (salvo automaticamente):
+            </label>
+            <textarea
+              id="day-note-${dayObj.dateISO}"
+              rows="2"
+              oninput="saveDayNote('${dayObj.dateISO}', this.value)"
+              placeholder="Anote aqui o que você aprendeu ou errou nas questões deste dia..."
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs sm:text-sm text-slate-800"
+            >${escapeHTML(savedNote)}</textarea>
+          </div>
+        </div>
+      `;
+
+      const container = document.getElementById('single-day-container');
+      container.innerHTML = `
+        <div class="${cardBorder} rounded-2xl p-5 sm:p-6 shadow-sm transition-all">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100">
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider ${isLate ? 'text-rose-700' : 'text-slate-400'}">
+                Fase ${dayObj.phase} • ${dayObj.weekday}
+              </span>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">${dayObj.formattedBR}</h2>
+            </div>
+            ${headerBadge}
+          </div>
+
+          ${statusBanner}
+
+          <div class="space-y-2.5">
+            ${dayObj.tasks.map(task => {
+              const isChecked = !!appState.completedTasks[task.id];
+              return `
+                <label class="flex items-start gap-3.5 p-3.5 rounded-xl border cursor-pointer transition-all select-none ${
+                  isChecked
+                    ? 'bg-slate-50 border-slate-200 opacity-75'
+                    : 'bg-white border-slate-200 hover:border-slate-900 shadow-2xs'
+                }">
+                  <input
+                    type="checkbox"
+                    ${isChecked ? 'checked' : ''}
+                    onchange="toggleTask('${task.id}', this.checked)"
+                    class="mt-0.5 w-5 h-5 rounded-md border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer shrink-0"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm sm:text-base font-semibold leading-snug ${
+                      isChecked ? 'line-through text-slate-400' : 'text-slate-900'
+                    }">${task.text}</p>
+                  </div>
+                  <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg border shrink-0 ${getTagClasses(task.tag)}">
+                    ${task.tag}
+                  </span>
+                </label>
+              `;
+            }).join('')}
+          </div>
+
+          ${simuladoCTA}
+          ${reviewToolsBlock}
+        </div>
+      `;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function saveDayNote(dateISO, value) {
+      appState.dayNotes[dateISO] = value;
+      saveState();
+    }
+
+    async function generateDayFlashReview(dateISO) {
+      const dayObj = CLOSED_SCHEDULE.find(d => d.dateISO === dateISO);
+      if (!dayObj) return;
+
+      const btn = document.getElementById('btn-flash-review');
+      const btnText = document.getElementById('btn-flash-review-text');
+      const outBox = document.getElementById(`flash-review-output-${dateISO}`);
+
+      btn.disabled = true;
+      btnText.textContent = 'Gerando Flash-Revisão...';
+
+      const tasksDesc = dayObj.tasks.map(t => `- ${t.text}`).join('\n');
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const prompt = `Você é um instrutor preparatório para o concurso da Polícia Militar (PM).
+Crie uma FLASH-REVISÃO objetiva e direta ao ponto sobre os tópicos estudados no dia ${dayObj.formattedBR} (${dayObj.weekday}):
+${tasksDesc}
+
+Entregue:
+1) 4 pontos-chave / bizus rápidos que mais caem na prova da PM sobre esses temas.
+2) 1 pergunta rápida de fixação com a resposta comentada logo abaixo.
+Seja conciso, tático e motivador.`;
+
+      try {
+        const response = await fetchWithBackoff(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+        const result = await response.json();
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error('Falha ao gerar revisão');
+
+        appState.aiFlashReviews[dateISO] = text;
+        saveState();
+        outBox.textContent = text;
+        outBox.classList.remove('hidden');
+      } catch (e) {
+        outBox.textContent = '❌ Não foi possível gerar a Flash-Revisão agora. Tente novamente em instantes.';
+        outBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = '✨ Atualizar Flash-Revisão IA';
+      }
+    }
+
+    function renderSubjectsProgress(stats) {
+      document.getElementById('overall-lessons-badge').textContent =
+        `${stats.totalDoneTasksCount}/${stats.totalTasksCount} lições`;
+
+      const list = document.getElementById('subjects-progress-list');
+      list.innerHTML = SUBJECTS_META.map(subj => {
+        const sData = stats.subjectStats[subj.key] || { done: 0, total: 0 };
+        const pct = sData.total > 0 ? Math.round((sData.done / sData.total) * 100) : 0;
+
+        return `
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5 truncate">
+                <span>${subj.icon}</span>
+                <span class="truncate">${subj.label}</span>
+              </span>
+              <span class="text-xs font-extrabold text-slate-900 shrink-0">${sData.done}/${sData.total} (${pct}%)</span>
+            </div>
+            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full ${subj.barColor} rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleTask(taskId, isChecked) {
+      if (isChecked) {
+        appState.completedTasks[taskId] = true;
+        showXpToast('+10 XP', 'Lição concluída e salva!');
+      } else {
+        delete appState.completedTasks[taskId];
+      }
+      saveState();
+      renderAll();
+    }
+
+    let toastTimeout;
+    function showXpToast(badge, msg) {
+      const toast = document.getElementById('xp-toast');
+      document.getElementById('xp-toast-badge').textContent = badge;
+      document.getElementById('xp-toast-msg').textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2400);
+    }
+
+    // ==================== MAPA DA MISSÃO (FUTURO TOTALMENTE CRIPTOGRAFADO) ====================
+    function openCalendarModal() {
+      const stats = analyzeProgress();
+      const refDate = stats.refDate;
+      const grid = document.getElementById('calendar-grid');
+
+      grid.innerHTML = CLOSED_SCHEDULE.map(d => {
+        const isFuture = d.dateISO > refDate;
+
+        // BLOQUEIO TOTAL: Dias futuros não revelam matéria, fase nem tarefa
+        if (isFuture) {
+          return `
+            <button
+              type="button"
+              onclick="handleLockedMapDayClick()"
+              class="p-3 rounded-xl border border-slate-200 bg-slate-100/90 text-left text-xs text-slate-400 cursor-not-allowed flex flex-col justify-between gap-1"
+            >
+              <div class="flex items-center justify-between w-full">
+                <span class="font-bold text-slate-500">${d.formattedBR.slice(0, 5)}</span>
+                <span>🔒</span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-tight text-slate-500 leading-tight">
+                Missão Confidencial • Desbloqueia na data
+              </span>
+            </button>
+          `;
+        }
+
+        const doneCount = d.tasks.filter(t => appState.completedTasks[t.id]).length;
+        const allDone = doneCount === d.tasks.length;
+        const isToday = d.dateISO === refDate;
+        const isLate = d.dateISO < refDate && doneCount === 0;
+
+        let cls = 'bg-white border-slate-200 text-slate-700';
+        let statusTag = 'Revisar';
+        let icon = '📖';
+
+        if (isLate) {
+          cls = 'bg-rose-50 border-rose-400 text-rose-900 font-bold';
+          statusTag = 'Atrasado (-15 XP)';
+          icon = '🚨';
+        } else if (allDone) {
+          cls = 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold';
+          statusTag = 'Concluído';
+          icon = '✅';
+        } else if (isToday) {
+          cls = 'bg-amber-100 border-amber-500 text-slate-950 font-black';
+          statusTag = 'Missão de Hoje';
+          icon = '🔥';
+        }
+
+        return `
+          <button
+            type="button"
+            onclick="selectDayFromModal('${d.dateISO}')"
+            class="p-3 rounded-xl border text-left text-xs transition-all hover:scale-[1.02] ${cls}"
+          >
+            <div class="flex items-center justify-between">
+              <span>${d.formattedBR}</span>
+              <span>${icon}</span>
+            </div>
+            <span class="block text-[10px] opacity-80 truncate mt-0.5">${d.weekday} • ${statusTag}</span>
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('calendar-modal').classList.remove('hidden');
+    }
+
+    function handleLockedMapDayClick() {
+      closeCalendarModal();
+      showFutureLockBanner();
+    }
+
+    function closeCalendarModal() {
+      document.getElementById('calendar-modal').classList.add('hidden');
+    }
+
+    function selectDayFromModal(dateISO) {
+      const refDate = getActiveReferenceDate();
+      if (dateISO > refDate) {
+        handleLockedMapDayClick();
+        return;
+      }
+      hideFutureLockBanner();
+      viewedDateISO = dateISO;
+      closeCalendarModal();
+      renderAll();
+    }
+
+    // ==================== SIMULADO OFICIAL PM (IA) ====================
+    function selectSimuladoSize(size) {
+      selectedSimuladoSize = size;
+      const btn10 = document.getElementById('sim-size-10');
+      const btn15 = document.getElementById('sim-size-15');
+
+      if (size === 10) {
+        btn10.className = 'p-4 rounded-xl border-2 border-slate-900 bg-slate-900 text-white text-left transition-all';
+        btn15.className = 'p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-slate-900 text-slate-900 text-left transition-all';
+      } else {
+        btn15.className = 'p-4 rounded-xl border-2 border-slate-900 bg-slate-900 text-white text-left transition-all';
+        btn10.className = 'p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-slate-900 text-slate-900 text-left transition-all';
+      }
+    }
+
+    let pendingSimuladoTaskId = null;
+    function launchSimuladoFromMission(taskId) {
+      pendingSimuladoTaskId = taskId;
+      switchTab('simulado');
+      resetSimuladoView();
+      startOfficialSimulado();
+    }
+
+    function resetSimuladoView() {
+      activeSimulado = null;
+      document.getElementById('simulado-intro-card').classList.remove('hidden');
+      document.getElementById('simulado-exam-container').classList.add('hidden');
+      document.getElementById('simulado-result-container').classList.add('hidden');
+      document.getElementById('simulado-error').classList.add('hidden');
+    }
+
+    function cancelSimulado() {
+      resetSimuladoView();
+    }
+
+    async function startOfficialSimulado() {
+      const errBox = document.getElementById('simulado-error');
+      errBox.classList.add('hidden');
+
+      const btn = document.getElementById('btn-start-simulado');
+      const btnText = document.getElementById('btn-start-simulado-text');
+      const spinner = document.getElementById('btn-start-simulado-spinner');
+
+      btn.disabled = true;
+      btnText.textContent = `Elaborando prova oficial (${selectedSimuladoSize} questões)...`;
+      spinner.classList.remove('hidden');
+
+      const perSubject = selectedSimuladoSize === 15 ? 3 : 2;
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const prompt = `Você é a banca examinadora oficial (estilo VUNESP) do concurso de Soldado da Polícia Militar (PM).
+Crie um simulado inédito com EXATAMENTE ${selectedSimuladoSize} questões objetivas de múltipla escolha (5 alternativas: A, B, C, D, E), distribuídas exatamente assim:
+- ${perSubject} questões de "Língua Portuguesa" (interpretação, gramática, concordância, crase ou pontuação)
+- ${perSubject} questões de "Matemática / RLM" (porcentagem, razão/proporção, lógica proposicional ou geometria básica)
+- ${perSubject} questões de "Noções de Direito / Adm. Pública" (Constituição Federal Art. 5º e Art. 144, Direito Penal ou Administração Pública)
+- ${perSubject} questões de "História / Geografia / Atualidades" (Brasil contemporâneo, geopolítica ou segurança pública)
+- ${perSubject} questões de "Noções de Informática" (Windows, Pacote Office, segurança da informação ou internet)
+
+Cada questão deve ter enunciado claro, 5 alternativas distintas (letras A, B, C, D, E), a letra correta e uma explicação objetiva do gabarito.`;
+
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              questoes: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    numero: { type: "INTEGER" },
+                    materia: { type: "STRING" },
+                    enunciado: { type: "STRING" },
+                    alternativas: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          letra: { type: "STRING" },
+                          texto: { type: "STRING" }
+                        },
+                        required: ["letra", "texto"]
+                      }
+                    },
+                    correta: { type: "STRING", description: "Letra A, B, C, D ou E" },
+                    explicacao: { type: "STRING" }
+                  },
+                  required: ["numero", "materia", "enunciado", "alternativas", "correta", "explicacao"]
+                }
+              }
+            },
+            required: ["questoes"]
+          }
+        }
+      };
+
+      try {
+        const response = await fetchWithBackoff(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawJson) throw new Error('Resposta vazia');
+
+        const parsed = JSON.parse(rawJson);
+        if (!parsed.questoes || parsed.questoes.length === 0) throw new Error('Sem questões');
+
+        activeSimulado = {
+          questions: parsed.questoes,
+          userAnswers: {},
+          targetTaskId: pendingSimuladoTaskId
+        };
+        pendingSimuladoTaskId = null;
+
+        renderSimuladoQuestions();
+      } catch (e) {
+        errBox.textContent = '❌ Erro ao gerar o simulado com a IA. Verifique sua conexão e tente novamente.';
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = '🚀 Gerar e Iniciar Simulado Oficial PM';
+        spinner.classList.add('hidden');
+      }
+    }
+
+    function renderSimuladoQuestions() {
+      document.getElementById('simulado-intro-card').classList.add('hidden');
+      document.getElementById('simulado-result-container').classList.add('hidden');
+      document.getElementById('simulado-exam-container').classList.remove('hidden');
+      document.getElementById('simulado-submit-warning').classList.add('hidden');
+
+      updateSimuladoAnsweredCount();
+
+      const listEl = document.getElementById('simulado-questions-list');
+      listEl.innerHTML = activeSimulado.questions.map((q, idx) => `
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3.5">
+          <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-900">Questão ${idx + 1}</span>
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200">
+              ${escapeHTML(q.materia)}
+            </span>
+          </div>
+          <p class="text-sm text-slate-900 font-medium leading-relaxed whitespace-pre-line">${escapeHTML(q.enunciado)}</p>
+          <div class="space-y-2 pt-1">
+            ${q.alternativas.map(alt => {
+              const letter = alt.letra.trim().toUpperCase();
+              return `
+                <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-slate-900 cursor-pointer transition-all select-none">
+                  <input
+                    type="radio"
+                    name="sim-q-${idx}"
+                    value="${letter}"
+                    onchange="recordSimuladoAnswer(${idx}, '${letter}')"
+                    class="mt-0.5 w-4 h-4 text-slate-900 focus:ring-slate-900 cursor-pointer shrink-0"
+                  />
+                  <span class="text-xs sm:text-sm text-slate-800 leading-snug">
+                    <strong class="font-extrabold text-slate-900">${letter})</strong> ${escapeHTML(alt.texto)}
+                  </span>
+                </label>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('simulado-exam-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function recordSimuladoAnswer(qIndex, letter) {
+      if (!activeSimulado) return;
+      activeSimulado.userAnswers[qIndex] = letter;
+      updateSimuladoAnsweredCount();
+    }
+
+    function updateSimuladoAnsweredCount() {
+      if (!activeSimulado) return;
+      const total = activeSimulado.questions.length;
+      const answered = Object.keys(activeSimulado.userAnswers).length;
+      document.getElementById('simulado-progress-text').textContent = `Respondidas: ${answered} de ${total}`;
+    }
+
+    async function finishAndGradeSimulado() {
+      if (!activeSimulado) return;
+      const total = activeSimulado.questions.length;
+      const answered = Object.keys(activeSimulado.userAnswers).length;
+      const warnBox = document.getElementById('simulado-submit-warning');
+
+      if (answered < total) {
+        warnBox.textContent = `⚠️ Atenção! Você respondeu ${answered} de ${total} questões. Na prova da PM não se deixa questão em branco! Responda todas antes de entregar.`;
+        warnBox.classList.remove('hidden');
+        return;
+      }
+      warnBox.classList.add('hidden');
+
+      const btn = document.getElementById('btn-finish-simulado');
+      const btnText = document.getElementById('btn-finish-simulado-text');
+      const spinner = document.getElementById('btn-finish-simulado-spinner');
+      btn.disabled = true;
+      btnText.textContent = 'Corrigindo prova e gerando diagnóstico...';
+      spinner.classList.remove('hidden');
+
+      // Apuração objetiva
+      let hits = 0;
+      const subjectMap = {};
+      const wrongSummaries = [];
+
+      activeSimulado.questions.forEach((q, idx) => {
+        const userAns = (activeSimulado.userAnswers[idx] || '').toUpperCase();
+        const correctAns = (q.correta || '').trim().toUpperCase();
+        const isRight = userAns === correctAns;
+
+        if (!subjectMap[q.materia]) subjectMap[q.materia] = { hits: 0, total: 0 };
+        subjectMap[q.materia].total++;
+
+        if (isRight) {
+          hits++;
+          subjectMap[q.materia].hits++;
+        } else {
+          wrongSummaries.push(`Questão ${idx + 1} (${q.materia}): marcou ${userAns}, correta era ${correctAns}. Assunto: ${q.enunciado.slice(0, 90)}...`);
+        }
+      });
+
+      const score100 = Math.round((hits / total) * 100);
+      const subjectBreakdownText = Object.entries(subjectMap)
+        .map(([mat, v]) => `${mat}: ${v.hits}/${v.total}`)
+        .join(' | ');
+
+      // Solicita diagnóstico duro e dicas personalizadas da IA
+      let diagnosis = score100 >= 70
+        ? 'Bom desempenho operacional, mas não se acomode: na PM cada décimo define quem entra e quem fica de fora!'
+        : 'NOTA INSUFICIENTE PARA APROVAÇÃO! Com esse rendimento você ficaria reprovado no corte da PM. Acorde e ataque seus pontos fracos hoje!';
+      let tips = [
+        'Refaça todas as questões erradas deste simulado sem olhar o gabarito.',
+        'Aumente a bateria diária de exercícios nas matérias em que acertou menos de 60%.'
+      ];
+
+      try {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const diagPrompt = `Você é um Instrutor Militar linha-dura preparando um candidato para o concurso da Polícia Militar (PM).
+O candidato acabou de fazer um simulado oficial e tirou ${score100}/100 pontos (${hits} acertos de ${total} questões).
+Desempenho por matéria: ${subjectBreakdownText}.
+Erros cometidos:
+${wrongSummaries.length > 0 ? wrongSummaries.join('\n') : 'Nenhum erro, gabaritou a prova!'}
+
+Dê um diagnóstico curto, duro e realista (estilo instrutor PM cobrando resultado) e 3 dicas práticas e específicas sobre o que ele precisa estudar/revisar com base nos erros acima.`;
+
+        const resp = await fetchWithBackoff(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: diagPrompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: "OBJECT",
+                properties: {
+                  diagnosticoDuro: { type: "STRING" },
+                  dicasEstudo: { type: "ARRAY", items: { type: "STRING" } }
+                },
+                required: ["diagnosticoDuro", "dicasEstudo"]
+              }
+            }
+          })
+        });
+        const resJson = await resp.json();
+        const raw = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (raw) {
+          const parsedDiag = JSON.parse(raw);
+          diagnosis = parsedDiag.diagnosticoDuro || diagnosis;
+          tips = parsedDiag.dicasEstudo || tips;
+        }
+      } catch (e) {}
+
+      // Bônus de XP e marcação automática da tarefa de simulado
+      const xpEarned = total === 15 ? 60 : 40;
+      appState.bonusXP = (appState.bonusXP || 0) + xpEarned;
+
+      if (activeSimulado.targetTaskId) {
+        appState.completedTasks[activeSimulado.targetTaskId] = true;
+      } else {
+        // Procura se hoje há uma tarefa de simulado pendente e marca automaticamente
+        const refDate = getActiveReferenceDate();
+        const todayObj = CLOSED_SCHEDULE.find(d => d.dateISO === refDate);
+        if (todayObj) {
+          const simT = todayObj.tasks.find(t => t.isOfficialSimulado);
+          if (simT) appState.completedTasks[simT.id] = true;
+        }
+      }
+
+      // Salva no histórico de simulados
+      const refDateObj = CLOSED_SCHEDULE.find(d => d.dateISO === getActiveReferenceDate());
+      appState.simuladoHistory.unshift({
+        date: refDateObj ? refDateObj.formattedBR : getActiveReferenceDate(),
+        score: score100,
+        hits,
+        total
+      });
+      appState.simuladoHistory = appState.simuladoHistory.slice(0, 12);
+      saveState();
+      renderAll();
+      renderSimuladoHistory();
+
+      // Exibe Boletim e Gabarito Comentado
+      document.getElementById('simulado-exam-container').classList.add('hidden');
+      document.getElementById('simulado-result-container').classList.remove('hidden');
+
+      document.getElementById('sim-result-score').textContent = score100;
+      document.getElementById('sim-result-hits').textContent = `${hits} acertos de ${total} questões (${score100}%) • +${xpEarned} XP creditados!`;
+      document.getElementById('sim-result-status').textContent = score100 >= 70 ? '🎖️ Apto no Corte Tático' : '🚨 Abaixo do Corte • Risco de Reprovação';
+
+      document.getElementById('sim-subject-breakdown').innerHTML = Object.entries(subjectMap).map(([mat, v]) => {
+        const pct = Math.round((v.hits / v.total) * 100);
+        const good = pct >= 70;
+        return `
+          <div class="p-3 rounded-xl border ${good ? 'bg-emerald-50/70 border-emerald-200' : 'bg-rose-50/70 border-rose-200'} flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800">${escapeHTML(mat)}</span>
+            <span class="text-xs font-black ${good ? 'text-emerald-800' : 'text-rose-800'}">${v.hits}/${v.total} (${pct}%)</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('sim-instructor-diagnosis').textContent = diagnosis;
+      document.getElementById('sim-instructor-tips').innerHTML = tips.map(t => `<li>${escapeHTML(t)}</li>`).join('');
+
+      document.getElementById('sim-annotated-answers').innerHTML = activeSimulado.questions.map((q, idx) => {
+        const userAns = (activeSimulado.userAnswers[idx] || '').toUpperCase();
+        const correctAns = (q.correta || '').trim().toUpperCase();
+        const isRight = userAns === correctAns;
+
+        return `
+          <div class="p-4 rounded-xl border ${isRight ? 'border-emerald-300 bg-emerald-50/30' : 'border-rose-300 bg-rose-50/30'} space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-black uppercase ${isRight ? 'text-emerald-800' : 'text-rose-800'}">
+                ${isRight ? '✅ Acertou' : '❌ Errou'} • Questão ${idx + 1} (${escapeHTML(q.materia)})
+              </span>
+              <span class="text-xs font-extrabold text-slate-700">
+                Sua: ${userAns} | Gabarito: ${correctAns}
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-800 font-medium">${escapeHTML(q.enunciado)}</p>
+            <p class="text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-200 leading-relaxed">
+              <strong class="text-slate-900">Comentário da Banca:</strong> ${escapeHTML(q.explicacao)}
+            </p>
+          </div>
+        `;
+      }).join('');
+
+      btn.disabled = false;
+      btnText.textContent = '✅ Entregar Prova e Ver Nota';
+      spinner.classList.add('hidden');
+      showXpToast(`+${xpEarned} XP`, 'Simulado Oficial concluído!');
+      document.getElementById('simulado-result-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderSimuladoHistory() {
+      const box = document.getElementById('simulado-history-box');
+      const list = document.getElementById('simulado-history-list');
+      if (!appState.simuladoHistory || appState.simuladoHistory.length === 0) {
+        box.classList.add('hidden');
+        return;
+      }
+      box.classList.remove('hidden');
+      list.innerHTML = appState.simuladoHistory.map(item => `
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold text-slate-900">Simulado Oficial PM • ${item.date}</p>
+            <p class="text-[11px] text-slate-500">${item.hits} de ${item.total} questões acertadas</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-lg ${item.score >= 70 ? 'bg-emerald-600' : 'bg-rose-600'} text-white text-xs font-black">
+            ${item.score}/100
+          </span>
+        </div>
+      `).join('');
+    }
+
+    // ==================== MODAL APP & BACKUP ====================
+    function openBackupModal() {
+      document.getElementById('backup-modal').classList.remove('hidden');
+    }
+
+    function closeBackupModal() {
+      document.getElementById('backup-modal').classList.add('hidden');
+    }
+
+    function exportBackupCode() {
+      const code = btoa(unescape(encodeURIComponent(JSON.stringify(appState))));
+      const box = document.getElementById('backup-code-box');
+      box.value = code;
+      box.classList.remove('hidden');
+      box.select();
+      document.execCommand('copy');
+
+      const fb = document.getElementById('backup-feedback');
+      fb.textContent = '✅ Código copiado! Guarde no seu WhatsApp para restaurar quando precisar.';
+      fb.classList.remove('hidden');
+    }
+
+    function toggleImportArea() {
+      document.getElementById('backup-code-box').value = '';
+      document.getElementById('backup-code-box').classList.remove('hidden');
+      document.getElementById('btn-confirm-import').classList.remove('hidden');
+      document.getElementById('backup-feedback').classList.add('hidden');
+    }
+
+    function importBackupCode() {
+      const code = document.getElementById('backup-code-box').value.trim();
+      const fb = document.getElementById('backup-feedback');
+      try {
+        const jsonStr = decodeURIComponent(escape(atob(code)));
+        const parsed = JSON.parse(jsonStr);
+        if (parsed && typeof parsed === 'object') {
+          appState = {
+            completedTasks: parsed.completedTasks || {},
+            simulatedDate: parsed.simulatedDate || null,
+            dayNotes: parsed.dayNotes || {},
+            aiFlashReviews: parsed.aiFlashReviews || {},
+            bonusXP: parsed.bonusXP || 0,
+            simuladoHistory: parsed.simuladoHistory || [],
+            draftTopic: parsed.draftTopic || '',
+            draftText: parsed.draftText || '',
+            essayHistory: parsed.essayHistory || []
+          };
+          saveState();
+          viewedDateISO = getActiveReferenceDate();
+          restoreEssayDraftAndHistory();
+          renderSimuladoHistory();
+          renderAll();
+          fb.textContent = '✅ Progresso restaurado com sucesso!';
+          fb.classList.remove('hidden');
+        }
+      } catch (e) {
+        fb.textContent = '❌ Código inválido. Verifique se copiou completo.';
+        fb.classList.remove('hidden');
+      }
+    }
+
+    // ==================== CORRETOR DE REDAÇÃO COM TEMAS PM & FOTO ====================
+    function initEssayTopics() {
+      const select = document.getElementById('pm-topic-select');
+      PM_ESSAY_TOPICS.forEach((topic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = topic;
+        opt.textContent = `${idx + 1}. ${topic}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function applySelectedPMTopic(val) {
+      if (!val) return;
+      document.getElementById('essay-topic').value = val;
+      saveEssayDraft();
+    }
+
+    function pickRandomPMTopic() {
+      const randomIndex = Math.floor(Math.random() * PM_ESSAY_TOPICS.length);
+      const chosen = PM_ESSAY_TOPICS[randomIndex];
+      document.getElementById('pm-topic-select').value = chosen;
+      document.getElementById('essay-topic').value = chosen;
+      saveEssayDraft();
+    }
+
+    function saveEssayDraft() {
+      appState.draftTopic = document.getElementById('essay-topic').value;
+      appState.draftText = document.getElementById('essay-text').value;
+      saveState();
+    }
+
+    function restoreEssayDraftAndHistory() {
+      document.getElementById('essay-topic').value = appState.draftTopic || '';
+      document.getElementById('essay-text').value = appState.draftText || '';
+      updateWordCount();
+      renderEssayHistory();
+    }
+
+    function renderEssayHistory() {
+      const box = document.getElementById('essay-history-box');
+      const list = document.getElementById('essay-history-list');
+      if (!appState.essayHistory || appState.essayHistory.length === 0) {
+        box.classList.add('hidden');
+        return;
+      }
+      box.classList.remove('hidden');
+      list.innerHTML = appState.essayHistory.map(item => `
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-slate-900 truncate">${escapeHTML(item.topic || 'Tema livre')}</p>
+            <p class="text-[11px] text-slate-500">${item.date} • ${item.viaFoto ? '📸 Via foto do caderno' : '✍️ Texto digitado'}</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-black shrink-0">
+            ${item.score}/100
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function updateWordCount() {
+      const text = document.getElementById('essay-text').value.trim();
+      const words = text ? text.split(/\s+/).length : 0;
+      document.getElementById('word-count').textContent = `${words} ${words === 1 ? 'palavra' : 'palavras'}`;
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('essay-text').value = e.target.result;
+        updateWordCount();
+        saveEssayDraft();
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      hideEssayError();
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          const MAX_DIMENSION = 1600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height && width > MAX_DIMENSION) {
+            height = Math.round((height * MAX_DIMENSION) / width);
+            width = MAX_DIMENSION;
+          } else if (height > MAX_DIMENSION) {
+            width = Math.round((width * MAX_DIMENSION) / height);
+            height = MAX_DIMENSION;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          const base64Data = compressedDataUrl.split(',')[1];
+
+          uploadedEssayImage = {
+            base64: base64Data,
+            mimeType: 'image/jpeg',
+            fileName: file.name
+          };
+
+          document.getElementById('photo-preview-img').src = compressedDataUrl;
+          document.getElementById('photo-file-name').textContent = file.name;
+          document.getElementById('photo-upload-controls').classList.add('hidden');
+          document.getElementById('photo-preview-container').classList.remove('hidden');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearUploadedImage() {
+      uploadedEssayImage = null;
+      document.getElementById('essay-camera-input').value = '';
+      document.getElementById('essay-gallery-input').value = '';
+      document.getElementById('photo-preview-img').src = '';
+      document.getElementById('photo-preview-container').classList.add('hidden');
+      document.getElementById('photo-upload-controls').classList.remove('hidden');
+    }
+
+    function showEssayError(msg) {
+      const errEl = document.getElementById('essay-error');
+      errEl.textContent = msg;
+      errEl.classList.remove('hidden');
+    }
+
+    function hideEssayError() {
+      document.getElementById('essay-error').classList.add('hidden');
+    }
+
+    async function fetchWithBackoff(url, options, maxRetries = 4) {
+      let delay = 1000;
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const response = await fetch(url, options);
+          if (response.ok) return response;
+          if (response.status === 429 || response.status >= 500) {
+            await new Promise(res => setTimeout(res, delay));
+            delay *= 2;
+            continue;
+          }
+          throw new Error(`Erro na API: ${response.status}`);
+        } catch (err) {
+          if (i === maxRetries - 1) throw err;
+          await new Promise(res => setTimeout(res, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    async function correctEssay() {
+      hideEssayError();
+      const topic = document.getElementById('essay-topic').value.trim();
+      const text = document.getElementById('essay-text').value.trim();
+
+      if (!uploadedEssayImage && (!text || text.length < 50)) {
+        showEssayError('Envie uma foto da sua redação no caderno ou digite/cole um texto com pelo menos 50 caracteres.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-correct-essay');
+      const btnText = document.getElementById('btn-correct-text');
+      const spinner = document.getElementById('btn-correct-spinner');
+
+      btn.disabled = true;
+      btnText.textContent = uploadedEssayImage ? 'Lendo foto e corrigindo...' : 'Corrigindo...';
+      spinner.classList.remove('hidden');
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const parts = [];
+
+      if (uploadedEssayImage) {
+        parts.push({
+          inlineData: {
+            mimeType: uploadedEssayImage.mimeType,
+            data: uploadedEssayImage.base64
+          }
+        });
+
+        parts.push({
+          text: `Você é um corretor oficial de redações para concursos da Polícia Militar (PM) no Brasil.
+O candidato enviou uma FOTO de sua redação escrita à mão no caderno (para evitar o corretor automático do celular).
+
+Suas tarefas:
+1. Transcreva fielmente todo o texto manuscrito da imagem no campo "transcricao". MANTENHA exatamente os erros de ortografia, acentuação, pontuação, separação silábica ou rasuras visíveis do candidato (NÃO corrija os erros na transcrição).
+2. Avalie a redação de forma rigorosa, construtiva e objetiva no padrão dissertativo-argumentativo da PM, verificando a aderência ao tema proposto e apontando erros ortográficos, de acentuação, rasuras ou problemas de legibilidade encontrados na folha.
+
+Tema proposto: ${topic || 'Não informado (avalie a coerência interna e o tema implícito)'}
+${text ? `Observação/texto complementar digitado pelo aluno:\n"""\n${text}\n"""` : ''}`
+        });
+      } else {
+        parts.push({
+          text: `Você é um corretor oficial de redações para concursos da Polícia Militar (PM) no Brasil.
+Avalie a redação abaixo de forma rigorosa, construtiva e objetiva, no padrão dissertativo-argumentativo.
+
+Tema proposto: ${topic || 'Não informado (avalie a coerência interna e o tema implícito)'}
+
+Texto da Redação:
+"""
+${text}
+"""`
+        });
+      }
+
+      const payload = {
+        contents: [{ parts }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              transcricao: { type: "STRING" },
+              notaFinal: { type: "INTEGER" },
+              resumoGeral: { type: "STRING" },
+              gramatica: {
+                type: "OBJECT",
+                properties: {
+                  nota: { type: "INTEGER" },
+                  comentario: { type: "STRING" }
+                },
+                required: ["nota", "comentario"]
+              },
+              estrutura: {
+                type: "OBJECT",
+                properties: {
+                  nota: { type: "INTEGER" },
+                  comentario: { type: "STRING" }
+                },
+                required: ["nota", "comentario"]
+              },
+              argumentacao: {
+                type: "OBJECT",
+                properties: {
+                  nota: { type: "INTEGER" },
+                  comentario: { type: "STRING" }
+                },
+                required: ["nota", "comentario"]
+              },
+              pontosFortes: { type: "ARRAY", items: { type: "STRING" } },
+              ondeMelhorar: { type: "ARRAY", items: { type: "STRING" } }
+            },
+            required: ["notaFinal", "resumoGeral", "gramatica", "estrutura", "argumentacao", "pontosFortes", "ondeMelhorar"]
+          }
+        }
+      };
+
+      try {
+        const response = await fetchWithBackoff(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!rawJson) throw new Error('Resposta vazia');
+
+        const data = JSON.parse(rawJson);
+        renderEssayResult(data, !!uploadedEssayImage);
+
+        const now = new Date();
+        const dateLabel = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+        appState.essayHistory.unshift({
+          topic: topic || 'Tema Livre',
+          score: data.notaFinal,
+          date: dateLabel,
+          viaFoto: !!uploadedEssayImage
+        });
+        appState.essayHistory = appState.essayHistory.slice(0, 10);
+        saveState();
+        renderEssayHistory();
+      } catch (error) {
+        showEssayError('Ocorreu um erro ao conectar com o corretor de IA. Tente novamente em instantes.');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Avaliar Redação Agora';
+        spinner.classList.add('hidden');
+      }
+    }
+
+    function renderEssayResult(data, hasImage) {
+      document.getElementById('result-score').textContent = data.notaFinal;
+      document.getElementById('result-summary').textContent = data.resumoGeral;
+
+      const transcriptionBox = document.getElementById('transcription-box');
+      if (hasImage && data.transcricao && data.transcricao.trim().length > 0) {
+        document.getElementById('result-transcription').textContent = data.transcricao;
+        transcriptionBox.classList.remove('hidden');
+      } else {
+        transcriptionBox.classList.add('hidden');
+      }
+
+      document.getElementById('score-gramatica').textContent = `${data.gramatica.nota}/30`;
+      document.getElementById('comment-gramatica').textContent = data.gramatica.comentario;
+
+      document.getElementById('score-estrutura').textContent = `${data.estrutura.nota}/30`;
+      document.getElementById('comment-estrutura').textContent = data.estrutura.comentario;
+
+      document.getElementById('score-argumentacao').textContent = `${data.argumentacao.nota}/40`;
+      document.getElementById('comment-argumentacao').textContent = data.argumentacao.comentario;
+
+      document.getElementById('result-strengths').innerHTML = data.pontosFortes.map(item => `<li>${escapeHTML(item)}</li>`).join('');
+      document.getElementById('result-improvements').innerHTML = data.ondeMelhorar.map(item => `<li>${escapeHTML(item)}</li>`).join('');
+
+      const resultBox = document.getElementById('essay-result');
+      resultBox.classList.remove('hidden');
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ==================== INICIALIZAÇÃO ====================
+    window.onload = function () {
+      updateNotifButtonUI();
+      initEssayTopics();
+      restoreEssayDraftAndHistory();
+      renderSimuladoHistory();
+      renderAll();
+    };
+  </script>
+</body>
+</html>
